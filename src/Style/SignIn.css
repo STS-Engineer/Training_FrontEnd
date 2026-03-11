@@ -1,0 +1,328 @@
+/* ── Reset ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── Tokens (same as App.css) ────────────────────────────────── */
+:root {
+  --navy:       #1a3260;
+  --blue:       #2563eb;
+  --blue-mid:   #3b82f6;
+  --blue-lt:    #dbeafe;
+  --blue-xlt:   #eff6ff;
+  --focus-ring: rgba(59,130,246,.22);
+  --border:     #e2e8f0;
+  --txt:        #1e293b;
+  --txt-mid:    #475569;
+  --txt-lt:     #94a3b8;
+  --bg-input:   #f8fafc;
+  --red:        #ef4444;
+  --red-lt:     #fef2f2;
+}
+
+/* ── Page layout ─────────────────────────────────────────────── */
+.si-page {
+  min-height: 100vh;
+  display: flex;
+  font-family: 'Inter', 'Segoe UI', system-ui, Arial, sans-serif;
+  background: #f1f5f9;
+}
+
+/* ── Left panel ──────────────────────────────────────────────── */
+.si-left {
+  position: fixed;
+  top: 0; left: 0;
+  width: 50%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 48px 44px;
+  z-index: 0;
+  transition: background-image .6s ease;
+}
+
+.si-left-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    170deg,
+    rgba(10,24,60,.45) 0%,
+    rgba(15,31,75,.72) 50%,
+    rgba(10,24,60,.92) 100%
+  );
+  z-index: 1;
+}
+
+.si-left-content {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+}
+
+/* Logo no longer in left panel — rule kept empty for safety */
+.si-left-logo { display: none; }
+
+.si-left-title {
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -.5px;
+  color: #fff;
+  margin-bottom: 16px;
+}
+
+.si-left-title span {
+  background: linear-gradient(90deg, #60a5fa, #a5f3fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.si-left-sub {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(255,255,255,.78);
+  max-width: 380px;
+  margin-bottom: 36px;
+}
+
+.si-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.si-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.35);
+  cursor: pointer;
+  padding: 0;
+  transition: background .25s, transform .25s;
+}
+
+.si-dot-active {
+  background: #60a5fa;
+  transform: scale(1.3);
+}
+
+/* ── Right panel ─────────────────────────────────────────────── */
+.si-right {
+  margin-left: 50%;
+  width: 50%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+/* ── Card ────────────────────────────────────────────────────── */
+.si-card {
+  width: 100%;
+  max-width: 440px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,.07),
+    0 10px 32px -4px rgba(26,50,96,.12);
+  padding: 44px 40px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Logo (shown only on mobile) — kept for compatibility, now unused */
+.si-card-logo { display: none; }
+
+/* ── Brand block (logo + divider + header) ───────────────────── */
+.si-card-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 28px;
+  gap: 0;
+}
+
+.si-brand-logo {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.si-brand-divider {
+  width: 40px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--navy), var(--blue-mid));
+  margin: 16px 0 18px;
+}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.si-card-header {
+  margin-bottom: 0;
+}
+
+.si-card-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--navy);
+  letter-spacing: -.4px;
+  margin-bottom: 6px;
+}
+
+.si-card-sub {
+  font-size: 14px;
+  color: var(--txt-mid);
+}
+
+/* ── Error banner ────────────────────────────────────────────── */
+.si-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--red-lt);
+  color: var(--red);
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* ── Form ────────────────────────────────────────────────────── */
+.si-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.si-fg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.si-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--txt);
+}
+
+/* ── Input wrapper ───────────────────────────────────────────── */
+.si-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.si-input-icon {
+  position: absolute;
+  left: 14px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.si-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px 0 42px;
+  background: var(--bg-input);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 14.5px;
+  color: var(--txt);
+  outline: none;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+  font-family: inherit;
+}
+
+.si-input::placeholder { color: var(--txt-lt); }
+
+.si-input:hover { border-color: #93c5fd; background: #fff; }
+
+.si-input:focus {
+  border-color: var(--blue);
+  background: #fff;
+  box-shadow: 0 0 0 3.5px var(--focus-ring);
+}
+
+/* extra right padding when the password toggle button is present */
+.si-input-pw { padding-right: 46px; }
+
+.si-pw-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background .15s;
+}
+.si-pw-toggle:hover { background: var(--blue-xlt); }
+.si-pw-toggle:hover svg { stroke: var(--blue); }
+
+/* ── Submit button ───────────────────────────────────────────── */
+.si-btn {
+  margin-top: 6px;
+  width: 100%;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: .2px;
+  transition: opacity .18s, transform .15s, box-shadow .18s;
+  box-shadow: 0 4px 14px rgba(37,99,235,.35);
+  font-family: inherit;
+}
+
+.si-btn:hover:not(:disabled) {
+  opacity: .93;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37,99,235,.42);
+}
+
+.si-btn:active:not(:disabled) { transform: translateY(0); }
+
+.si-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ── Spinner ─────────────────────────────────────────────────── */
+.si-spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: si-spin .7s linear infinite;
+}
+
+@keyframes si-spin { to { transform: rotate(360deg); } }
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.si-footer {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--txt-lt);
+  text-align: center;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .si-left  { display: none; }
+  .si-right { margin-left: 0; width: 100%; background: #f1f5f9; }
+  .si-card  { box-shadow: none; background: transparent; padding: 32px 20px; }
+  .si-brand-logo { height: 40px; }
+}
