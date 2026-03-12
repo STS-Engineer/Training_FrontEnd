@@ -71,7 +71,7 @@ export default function DashboardStats({ total, pending, inProgress, done, rejec
       <StatCard icon={<IconProgress />} value={inProgress} label="In Progress" color="indigo" />
       <StatCard icon={<IconDone />}     value={done}       label="Done"        color="teal"   />
       <StatCard icon={<IconRejected />} value={rejected}   label="Rejected"    color="red"    />
-      <StatCard icon={<IconUpdated />}  value={updated}    label="Updated"     color="blue"   />
+      <StatCard icon={<IconUpdated />}  value={updated}    label="Updated"     color="amber"  />
     </div>
   );
 }

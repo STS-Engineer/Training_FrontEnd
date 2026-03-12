@@ -2,13 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './../Style/SignIn.css';
 import { signIn } from '../api';
-import { setSession } from '../App';
+import { setSession } from '../session';
 
 const SLIDES = [
   { tag: 'Training Request',    img: 'bg1.webp' },
-  { tag: 'Knowledge Transfer',  img: 'bg2.png'  },
-  { tag: 'Global Reach',        img: 'bg3.webp' },
-  { tag: 'Continuous Learning', img: 'bg4.webp' },
+  { tag: 'Knowledge Transfer',  img: 'bg2.jpg'  },
+  { tag: 'Global Reach',        img: 'bg3.jpg' },
+  { tag: 'Continuous Learning', img: 'bg4.jpg' },
 ];
 
 function LeftPanel() {

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { normalizeFiles, fileKind, isWordDoc } from './fileHelpers';
 import { FilesCell } from './MediaModal';
+import CompletionModal from './CompletionModal';
 
 const STATUS_LABEL = {
   pending:       { label: 'Pending',     cls: 'badge-pending'   },
@@ -16,7 +17,7 @@ const STATUSES = [
   { key: 'in progress', label: 'In Progress', colorKey: 'indigo' },
   { key: 'done',        label: 'Done',        colorKey: 'teal'   },
   { key: 'rejected',    label: 'Rejected',    colorKey: 'red'    },
-  { key: 'updated',     label: 'Updated',     colorKey: 'blue'   },
+  { key: 'updated',     label: 'Updated',     colorKey: 'yellow' },
   { key: 'stuck',       label: 'Stuck',       colorKey: 'amber'  },
 ];
 
@@ -43,13 +44,20 @@ function PeopleCell({ people, avatarClass }) {
 
 function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
   onOpenMedia, onOpenQuiz, statusKey,
-  showFirstValidation, showSecondValidation, showRejectedAt }) {
+  showFirstValidation, showSecondValidation, showRejectedAt,
+  showTrainerDoneAt, showDocumentation, showFinalValidation, showOwnerComment,
+  currentUserId, onOpenCompletion }) {
   const isExpanded  = expandedRow === t.id;
 
   const allMedia  = normalizeFiles(t.media   ?? []);
   const photos    = allMedia.filter(f => fileKind(f) === 'image');
   const videos    = allMedia.filter(f => fileKind(f) === 'video');
   const quizFiles = normalizeFiles(t.quizzes ?? []);
+  const docFiles  = normalizeFiles(
+    t.documentation_path
+      ? [{ file_path: t.documentation_path, file_name: t.documentation_name ?? t.documentation_path.split('/').pop() }]
+      : []
+  );
   const hasDetails = !!(t.training_objectives ?? t.objectives ?? t.information ?? t.requested_kpis ?? t.kpis ?? t.target_audience);
 
   return (
@@ -128,9 +136,6 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
           }} />
         </td>
 
-        {/* Manager — moved after Quiz */}
-        <td><PeopleCell people={t.approvalManagers ?? []} avatarClass="tbl-avatar-indigo" /></td>
-
         {/* 1st Validation: badge + date, hidden if all null */}
         {showFirstValidation && (
           <td className="tbl-td-validation">
@@ -186,6 +191,49 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
           </td>
         )}
 
+        {showTrainerDoneAt && (
+          <td className="tbl-td-date">
+            {t.trainer_done_at
+              ? new Date(t.trainer_done_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+              : <span className="tbl-null">—</span>}
+          </td>
+        )}
+
+        {showDocumentation && (
+          <td onClick={e => e.stopPropagation()}>
+            <FilesCell files={docFiles} onOpen={(fs, i) => {
+              const f = fs[i];
+              if (isWordDoc(f.name)) onOpenQuiz(f);
+              else onOpenMedia(fs, i);
+            }} />
+          </td>
+        )}
+
+        {showFinalValidation && (
+          <td className="tbl-td-validation">
+            {t.final_validation ? (
+              <div className="tbl-valid-wrap">
+                <span className={`tbl-valid-badge tbl-valid-${t.final_validation.replace('_', '-')}`}>
+                  {t.final_validation === 'accepted' ? 'Accepted' : 'Update Requested'}
+                </span>
+                {t.final_approved_at && (
+                  <span className="tbl-valid-date">
+                    {new Date(t.final_approved_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
+            ) : <span className="tbl-null">—</span>}
+          </td>
+        )}
+
+        {showOwnerComment && (
+          <td className="tbl-td-reason">
+            {t.owner_comment
+              ? <span className="tbl-reject-reason" title={t.owner_comment}>{t.owner_comment}</span>
+              : <span className="tbl-null">—</span>}
+          </td>
+        )}
+
         <td><Badge status={t.status ?? 'pending'} /></td>
 
         {statusKey === 'rejected' && (
@@ -203,6 +251,24 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
               : <span className="tbl-null">—</span>}
           </td>
         )}
+
+        {/* Done button — only for the assigned trainer in In Progress rows */}
+        {statusKey === 'in progress' && t.trainer_id != null && Number(currentUserId) === Number(t.trainer_id) && (
+          <td className="tbl-td-notify" onClick={e => e.stopPropagation()}>
+            <button
+              className="tbl-done-btn"
+              onClick={() => onOpenCompletion(t)}
+              title="Mark as completed and send documentation"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Done
+            </button>
+          </td>
+        )}
+
       </tr>
 
       {/* Expandable detail row */}
@@ -214,6 +280,11 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
             + (showRejectedAt ? 1 : 0)
             + (showFirstValidation ? 1 : 0)
             + (showSecondValidation ? 2 : 0)
+            + (showTrainerDoneAt ? 1 : 0)
+            + (showDocumentation ? 1 : 0)
+            + (showFinalValidation ? 1 : 0)
+            + (showOwnerComment ? 1 : 0)
+            + (statusKey === 'in progress' && t.trainer_id != null && Number(currentUserId) === Number(t.trainer_id) ? 1 : 0)
           }>
             <div className="tbl-detail-inner">
               {t.target_audience && (
@@ -279,19 +350,26 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
 }
 
 export default function TrainingsTable({
-  displayed, expandedRow, setExpandedRow, onOpenMedia, onOpenQuiz,
+  displayed, expandedRow, setExpandedRow, onOpenMedia, onOpenQuiz, currentUserId,
 }) {
+  const [completionTraining, setCompletionTraining] = useState(null);
+
   // Global checks: if ANY training (across all sections) has the field set,
   // the column is shown in every section table.
-  const showFirstValidation  = displayed.some(t => t.first_validation  != null);
-  const showSecondValidation = displayed.some(t => t.second_validation != null);
+  const showFirstValidation  = displayed.some(t => t.first_validation   != null);
+  const showSecondValidation = displayed.some(t => t.second_validation  != null);
 
   return (
+    <>
     <div className="tbl-sections">
       {STATUSES.map(({ key, label, colorKey }) => {
         const rows = displayed.filter(t => (t.status ?? 'pending') === key);
         if (!rows.length) return null;
-        const showRejectedAt = key === 'rejected' && rows.some(t => t.rejected_at != null);
+        const showRejectedAt      = key === 'rejected' && rows.some(t => t.rejected_at        != null);
+        const showTrainerDoneAt    = rows.some(t => t.trainer_done_at    != null);
+        const showDocumentation    = rows.some(t => t.documentation_name != null);
+        const showFinalValidation  = rows.some(t => t.final_validation   != null);
+        const showOwnerComment     = rows.some(t => t.owner_comment      != null);
         return (
           <div key={key} className="tbl-section">
             <div className={`tbl-section-hd tbl-sh-${colorKey}`}>
@@ -318,13 +396,17 @@ export default function TrainingsTable({
                     <th>Photos</th>
                     <th>Videos</th>
                     <th>Quiz</th>
-                    <th>Manager(s)</th>
                     {showFirstValidation  && <th>1st Validation</th>}
                     {showSecondValidation && <th>Final Validator</th>}
                     {showSecondValidation && <th>2nd Validation</th>}
+                    {showTrainerDoneAt    && <th>Trainer Done At</th>}
+                    {showDocumentation   && <th>Documentation</th>}
+                    {showFinalValidation  && <th>Final Validation</th>}
+                    {showOwnerComment     && <th>Owner Comment</th>}
                     <th>Status</th>
                     {key === 'rejected' && <th>Rejection Reason</th>}
                     {showRejectedAt     && <th>Rejected At</th>}
+                    {key === 'in progress' && rows.some(r => r.trainer_id != null && Number(currentUserId) === Number(r.trainer_id)) && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -337,6 +419,12 @@ export default function TrainingsTable({
                       showFirstValidation={showFirstValidation}
                       showSecondValidation={showSecondValidation}
                       showRejectedAt={showRejectedAt}
+                      showTrainerDoneAt={showTrainerDoneAt}
+                      showDocumentation={showDocumentation}
+                      showFinalValidation={showFinalValidation}
+                      showOwnerComment={showOwnerComment}
+                      currentUserId={currentUserId}
+                      onOpenCompletion={setCompletionTraining}
                       expandedRow={expandedRow}
                       setExpandedRow={setExpandedRow}
                       onOpenMedia={onOpenMedia}
@@ -350,5 +438,13 @@ export default function TrainingsTable({
         );
       })}
     </div>
+    {completionTraining && (
+      <CompletionModal
+        training={completionTraining}
+        onClose={() => setCompletionTraining(null)}
+        onSuccess={() => { setCompletionTraining(null); window.location.reload(); }}
+      />
+    )}
+    </>
   );
 }

@@ -11,19 +11,19 @@ const SLIDES = [
     tag: 'Knowledge Transfer',
     title: <>Empower your<br /><span>teams to grow</span></>,
     sub: 'Share expertise across departments with structured, high-quality training content.',
-    img: 'bg2.png',
+    img: 'bg2.jpg',
   },
   {
     tag: 'Global Reach',
     title: <>Training without<br /><span>borders</span></>,
     sub: 'Reach all AVOCarbon sites worldwide with consistent, multilingual training modules.',
-    img: 'bg3.webp',
+    img: 'bg3.jpg',
   },
   {
     tag: 'Continuous Learning',
     title: <>Track progress,<br /><span>measure impact</span></>,
     sub: 'Monitor completion rates and quiz results with the KPIs that matter to your team.',
-    img: 'bg4.webp',
+    img: 'bg4.jpg',
   },
 ];
 

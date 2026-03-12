@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchTrainings } from '../api';
-import { getSession, clearSession } from '../App';
+import { getSession, clearSession } from '../session';
 import WordViewerModal from './WordViewerModal';
 import MediaModal from './dashboard/MediaModal';
 import DashboardNavbar from './dashboard/DashboardNavbar';
 import DashboardStats from './dashboard/DashboardStats';
 import TrainingsTable from './dashboard/TrainingsTable';
+import Sidebar from './dashboard/Sidebar';
 import './../Style/Dashboard.css';
 
 export default function Dashboard() {
@@ -54,10 +55,10 @@ export default function Dashboard() {
 
   return (
     <div className="db-page">
-
       <DashboardNavbar member={member} onSignOut={handleSignOut} />
-
-      <main className="db-main">
+      <div className="db-body">
+        <Sidebar />
+        <main className="db-main">
 
         {/* Welcome */}
         <div className="db-welcome">
@@ -67,6 +68,14 @@ export default function Dashboard() {
             </h1>
             <p className="db-welcome-sub">Here's an overview of all training requests.</p>
           </div>
+          <button className="db-btn-new" onClick={() => navigate('/training')}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Request
+          </button>
         </div>
 
         {/* Stats */}
@@ -133,10 +142,12 @@ export default function Dashboard() {
             setExpandedRow={setExpandedRow}
             onOpenMedia={(fs, i) => setModal({ files: fs, index: i })}
             onOpenQuiz={f => setWordModal({ url: f.url, name: f.name })}
+            currentUserId={member?.id}
           />
         )}
 
       </main>
+      </div>
 
       {modal && <MediaModal modal={modal} onClose={() => setModal(null)} />}
       {wordModal && (
