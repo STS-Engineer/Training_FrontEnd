@@ -6,6 +6,7 @@ import CompletionModal from './CompletionModal';
 const STATUS_LABEL = {
   pending:       { label: 'Pending',     cls: 'badge-pending'   },
   'in progress': { label: 'In Progress', cls: 'badge-progress'  },
+  awaiting_owner_validation: { label: 'Awaiting Owner Validation', cls: 'badge-awaiting-owner' },
   done:          { label: 'Done',        cls: 'badge-done'      },
   rejected:      { label: 'Rejected',    cls: 'badge-rejected'  },
   updated:       { label: 'Updated',     cls: 'badge-updated'   },
@@ -15,6 +16,7 @@ const STATUS_LABEL = {
 const STATUSES = [
   { key: 'pending',     label: 'Pending',     colorKey: 'orange' },
   { key: 'in progress', label: 'In Progress', colorKey: 'indigo' },
+  { key: 'awaiting_owner_validation', label: 'Awaiting Owner Validation', colorKey: 'green' },
   { key: 'done',        label: 'Done',        colorKey: 'teal'   },
   { key: 'rejected',    label: 'Rejected',    colorKey: 'red'    },
   { key: 'updated',     label: 'Updated',     colorKey: 'yellow' },

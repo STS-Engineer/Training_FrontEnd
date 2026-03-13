@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { sendCompletionDoc } from '../../api';
+import { markTrainingDone } from '../../api';
 
 export default function CompletionModal({ training, onClose, onSuccess }) {
   const [file,    setFile]    = useState(null);
+  const [link,    setLink]    = useState('');
+  const [summary, setSummary] = useState('');
   const [sending, setSending] = useState(false);
   const [error,   setError]   = useState(null);
   const inputRef = useRef();
@@ -18,13 +20,13 @@ export default function CompletionModal({ training, onClose, onSuccess }) {
   };
 
   const handleSend = async () => {
-    if (!file) { setError('Please select a file (Word or PDF).'); return; }
     setSending(true);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append('doc', file);
-      await sendCompletionDoc(training.id, formData);
+      await markTrainingDone(training.id, file, {
+        link,
+        description_done: summary,
+      });
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -62,10 +64,34 @@ export default function CompletionModal({ training, onClose, onSuccess }) {
         {/* Body */}
         <div className="cmod-body">
           <p className="cmod-desc">
-            Attach the training documentation (Word or PDF).<br />
+            Training documentation (Word or PDF) is optional.<br />
             It will be sent by email to the owner(s):
             <strong> {ownerEmails.join(', ') || '—'}</strong>
           </p>
+
+          <div className="cmod-field-wrap">
+            <label htmlFor="completion-link" className="cmod-label">Training Link </label>
+            <input
+              id="completion-link"
+              className="cmod-input"
+              type="url"
+              placeholder="https://..."
+              value={link}
+              onChange={e => setLink(e.target.value)}
+            />
+          </div>
+
+          <div className="cmod-field-wrap">
+            <label htmlFor="completion-summary" className="cmod-label">Description </label>
+            <textarea
+              id="completion-summary"
+              className="cmod-textarea"
+              placeholder="Trainer summary/details when training is completed..."
+              value={summary}
+              onChange={e => setSummary(e.target.value)}
+              rows={4}
+            />
+          </div>
 
           {/* Drop zone */}
           <div
@@ -122,7 +148,7 @@ export default function CompletionModal({ training, onClose, onSuccess }) {
           <button className="cmod-btn-cancel" onClick={onClose} disabled={sending}>
             Cancel
           </button>
-          <button className="cmod-btn-send" onClick={handleSend} disabled={sending || !file}>
+          <button className="cmod-btn-send" onClick={handleSend} disabled={sending}>
             {sending ? (
               <>
                 <span className="cmod-spinner" />

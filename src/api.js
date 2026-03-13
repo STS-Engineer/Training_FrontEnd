@@ -145,15 +145,22 @@ export async function updateTraining(id, formData) {
   return handleResponse(res);
 }
 
-// ── Completion document ───────────────────────────────────────────────────────
+// ── Mark training done ───────────────────────────────────────────────────────
 
 /**
- * Envoie la documentation de fin de training (PDF/Word) au propriétaire.
+ * Marque une formation comme terminée côté trainer.
+ * Les 3 champs sont optionnels: doc, link, description_done.
  * @param {number} trainingId
- * @param {FormData} formData  champs: doc (file)
+ * @param {File|null} docFile
+ * @param {{ link?: string|null, description_done?: string|null }} payload
  */
-export async function sendCompletionDoc(trainingId, formData) {
-  console.log('Envoi du document de fin de formation pour training ID:', trainingId, formData.get('doc').name);
+export async function markTrainingDone(trainingId, docFile = null, payload = {}) {
+  const formData = new FormData();
+  if (docFile) formData.append('doc', docFile);
+  formData.append('link', payload.link ? String(payload.link).trim() : '');
+  formData.append('description_done', payload.description_done ? String(payload.description_done).trim() : '');
+
+  console.log('Envoi de fin de formation pour training ID:', trainingId, docFile ? docFile.name : 'no-doc');
   const token = await getToken();
   const res = await fetch(`${API_URL}/trainings/${trainingId}/done`, {
     method: 'PATCH',
@@ -161,6 +168,20 @@ export async function sendCompletionDoc(trainingId, formData) {
     body: formData,
   });
   return handleResponse(res);
+}
+
+/**
+ * Compatibilité avec l'ancien appel (trainingId, formData).
+ * @deprecated Utiliser markTrainingDone(trainingId, docFile, payload)
+ */
+export async function sendCompletionDoc(trainingId, formData) {
+  const doc = formData?.get?.('doc') ?? null;
+  const link = formData?.get?.('link') ?? '';
+  const descriptionDone = formData?.get?.('description_done') ?? '';
+  return markTrainingDone(trainingId, doc, {
+    link,
+    description_done: descriptionDone,
+  });
 }
 
 // ── Training form submission ───────────────────────────────────────────────────

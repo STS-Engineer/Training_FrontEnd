@@ -8,6 +8,8 @@ import DashboardNavbar from './dashboard/DashboardNavbar';
 import DashboardStats from './dashboard/DashboardStats';
 import TrainingsTable from './dashboard/TrainingsTable';
 import Sidebar from './dashboard/Sidebar';
+import CustomSelect from './training/CustomSelect';
+import './../Style/App.css';
 import './../Style/Dashboard.css';
 
 export default function Dashboard() {
@@ -18,6 +20,11 @@ export default function Dashboard() {
   const [loading,     setLoading]     = useState(true);
   const [error,       setError]       = useState(null);
   const [search,      setSearch]      = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [requesterFilter, setRequesterFilter] = useState('all');
+  const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [requirementFilter, setRequirementFilter] = useState('all');
   const [expandedRow, setExpandedRow] = useState(null);
   const [modal,       setModal]       = useState(null);
   const [wordModal,   setWordModal]   = useState(null);
@@ -39,10 +46,89 @@ export default function Dashboard() {
       .then(data => setTrainings(data))
       .catch(err  => setError(err.message));
 
-  const displayed = trainings.filter(t =>
-    [t.name, t.department, t.type_of_training]
-      .join(' ').toLowerCase().includes(search.toLowerCase())
-  );
+  const createOptions = values => Array.from(new Set(values.filter(Boolean)))
+    .sort((left, right) => left.localeCompare(right));
+
+  const statusOptions = createOptions(trainings.map(training => training.status));
+  const departmentOptions = createOptions(trainings.map(training => training.department));
+  const typeOptions = createOptions(trainings.map(training => training.type_of_training));
+  const requirementOptions = createOptions(trainings.map(training => training.requirement));
+
+  const requesterOptions = Array.from(
+    new Map(
+      trainings
+        .flatMap(training => training.requesters ?? [])
+        .filter(requester => requester?.id != null)
+        .map(requester => [
+          String(requester.id),
+          {
+            id: String(requester.id),
+            label: requester.display_name
+              ?? [requester.first_name, requester.last_name].filter(Boolean).join(' ')
+              ?? requester.email
+              ?? `Requester #${requester.id}`,
+          },
+        ])
+    ).values()
+  ).sort((left, right) => left.label.localeCompare(right.label));
+
+  const statusSelectOptions = [{ value: 'all', label: 'All statuses' }, ...statusOptions.map(option => ({ value: option, label: option }))];
+  const requesterSelectOptions = [{ value: 'all', label: 'All requesters' }, ...requesterOptions.map(option => ({ value: option.id, label: option.label }))];
+  const departmentSelectOptions = [{ value: 'all', label: 'All departments' }, ...departmentOptions.map(option => ({ value: option, label: option }))];
+  const typeSelectOptions = [{ value: 'all', label: 'All types' }, ...typeOptions.map(option => ({ value: option, label: option }))];
+  const requirementSelectOptions = [{ value: 'all', label: 'All requirements' }, ...requirementOptions.map(option => ({ value: option, label: option }))];
+
+  const displayed = trainings.filter(t => {
+    const requesterSearch = (t.requesters ?? [])
+      .flatMap(requester => [
+        requester.display_name,
+        requester.first_name,
+        requester.last_name,
+        requester.email,
+      ])
+      .filter(Boolean)
+      .join(' ');
+
+    const matchesSearch = [t.name, t.department, t.type_of_training, requesterSearch]
+      .join(' ')
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesRequester = requesterFilter === 'all'
+      || (t.requesters ?? []).some(requester => String(requester.id) === requesterFilter);
+
+    const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
+    const matchesDepartment = departmentFilter === 'all' || t.department === departmentFilter;
+    const matchesType = typeFilter === 'all' || t.type_of_training === typeFilter;
+    const matchesRequirement = requirementFilter === 'all' || t.requirement === requirementFilter;
+
+    return matchesSearch
+      && matchesRequester
+      && matchesStatus
+      && matchesDepartment
+      && matchesType
+      && matchesRequirement;
+  });
+
+  const activeFilters = [
+    search.trim() ? `Search: ${search.trim()}` : null,
+    statusFilter !== 'all' ? `Status: ${statusFilter}` : null,
+    requesterFilter !== 'all'
+      ? `Requester: ${requesterOptions.find(option => option.id === requesterFilter)?.label ?? requesterFilter}`
+      : null,
+    departmentFilter !== 'all' ? `Department: ${departmentFilter}` : null,
+    typeFilter !== 'all' ? `Type: ${typeFilter}` : null,
+    requirementFilter !== 'all' ? `Requirement: ${requirementFilter}` : null,
+  ].filter(Boolean);
+
+  const clearFilters = () => {
+    setSearch('');
+    setStatusFilter('all');
+    setRequesterFilter('all');
+    setDepartmentFilter('all');
+    setTypeFilter('all');
+    setRequirementFilter('all');
+  };
 
   const stats = {
     total:      trainings.length,
@@ -82,20 +168,96 @@ export default function Dashboard() {
         <DashboardStats {...stats} />
 
         {/* Search toolbar */}
-        <div className="db-toolbar">
-          <div className="db-search-wrap">
-            <svg className="db-search-icon" width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <input
-              className="db-search"
-              type="text"
-              placeholder="Search by name, department, type…"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+        <div className="db-toolbar db-toolbar-modern">
+          <div className="db-toolbar-head">
+            <div className="db-search-wrap">
+              <svg className="db-search-icon" width="16" height="16" viewBox="0 0 24 24"
+                fill="none" stroke="#94a3b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                className="db-search"
+                type="text"
+                placeholder="Search by training, requester, department, type..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+            </div>
+            <button
+              type="button"
+              className="db-clear-filters"
+              onClick={clearFilters}
+              disabled={activeFilters.length === 0}
+            >
+              Reset filters
+            </button>
+          </div>
+
+          <div className="db-filter-grid">
+            <div className="db-filter-wrap db-filter-wrap-status">
+              <label className="db-filter-label">Status</label>
+              <CustomSelect
+                name="statusFilter"
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+                options={statusSelectOptions}
+                placeholder="All statuses"
+              />
+            </div>
+
+            <div className="db-filter-wrap db-filter-wrap-requester">
+              <label className="db-filter-label">Requester</label>
+              <CustomSelect
+                name="requesterFilter"
+                value={requesterFilter}
+                onChange={e => setRequesterFilter(e.target.value)}
+                options={requesterSelectOptions}
+                placeholder="All requesters"
+              />
+            </div>
+
+            <div className="db-filter-wrap db-filter-wrap-department">
+              <label className="db-filter-label">Department</label>
+              <CustomSelect
+                name="departmentFilter"
+                value={departmentFilter}
+                onChange={e => setDepartmentFilter(e.target.value)}
+                options={departmentSelectOptions}
+                placeholder="All departments"
+              />
+            </div>
+
+            <div className="db-filter-wrap db-filter-wrap-type">
+              <label className="db-filter-label">Type</label>
+              <CustomSelect
+                name="typeFilter"
+                value={typeFilter}
+                onChange={e => setTypeFilter(e.target.value)}
+                options={typeSelectOptions}
+                placeholder="All types"
+              />
+            </div>
+
+            <div className="db-filter-wrap db-filter-wrap-requirement">
+              <label className="db-filter-label">Requirement</label>
+              <CustomSelect
+                name="requirementFilter"
+                value={requirementFilter}
+                onChange={e => setRequirementFilter(e.target.value)}
+                options={requirementSelectOptions}
+                placeholder="All requirements"
+              />
+            </div>
+          </div>
+
+          <div className="db-toolbar-meta">
+            <span className="db-results-count">{displayed.length} result{displayed.length !== 1 ? 's' : ''}</span>
+            <div className="db-active-filters">
+              {activeFilters.length > 0 ? activeFilters.map(filter => (
+                <span key={filter} className="db-filter-pill">{filter}</span>
+              )) : <span className="db-filter-pill db-filter-pill-muted">No active filters</span>}
+            </div>
           </div>
         </div>
 
