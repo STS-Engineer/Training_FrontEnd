@@ -47,7 +47,7 @@ function PeopleCell({ people, avatarClass }) {
 function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
   onOpenMedia, onOpenQuiz, statusKey,
   showFirstValidation, showSecondValidation, showRejectedAt,
-  showTrainerDoneAt, showDocumentation, showFinalValidation, showOwnerComment,
+  showTrainerDoneAt, showDocumentation, showLink, showFinalValidation, showOwnerComment,
   currentUserId, onOpenCompletion }) {
   const isExpanded  = expandedRow === t.id;
 
@@ -211,6 +211,14 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
           </td>
         )}
 
+        {showLink && (
+          <td onClick={e => e.stopPropagation()}>
+            {t.link
+              ? <a href={t.link} target="_blank" rel="noopener noreferrer">Open link</a>
+              : <span className="tbl-null">—</span>}
+          </td>
+        )}
+
         {showFinalValidation && (
           <td className="tbl-td-validation">
             {t.final_validation ? (
@@ -284,6 +292,7 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
             + (showSecondValidation ? 2 : 0)
             + (showTrainerDoneAt ? 1 : 0)
             + (showDocumentation ? 1 : 0)
+            + (showLink ? 1 : 0)
             + (showFinalValidation ? 1 : 0)
             + (showOwnerComment ? 1 : 0)
             + (statusKey === 'in progress' && t.trainer_id != null && Number(currentUserId) === Number(t.trainer_id) ? 1 : 0)
@@ -370,6 +379,7 @@ export default function TrainingsTable({
         const showRejectedAt      = key === 'rejected' && rows.some(t => t.rejected_at        != null);
         const showTrainerDoneAt    = rows.some(t => t.trainer_done_at    != null);
         const showDocumentation    = rows.some(t => t.documentation_name != null);
+        const showLink             = rows.some(t => t.link               != null);
         const showFinalValidation  = rows.some(t => t.final_validation   != null);
         const showOwnerComment     = rows.some(t => t.owner_comment      != null);
         return (
@@ -403,6 +413,7 @@ export default function TrainingsTable({
                     {showSecondValidation && <th>2nd Validation</th>}
                     {showTrainerDoneAt    && <th>Trainer Done At</th>}
                     {showDocumentation   && <th>Documentation</th>}
+                    {showLink            && <th>Link</th>}
                     {showFinalValidation  && <th>Final Validation</th>}
                     {showOwnerComment     && <th>Owner Comment</th>}
                     <th>Status</th>
@@ -423,6 +434,7 @@ export default function TrainingsTable({
                       showRejectedAt={showRejectedAt}
                       showTrainerDoneAt={showTrainerDoneAt}
                       showDocumentation={showDocumentation}
+                      showLink={showLink}
                       showFinalValidation={showFinalValidation}
                       showOwnerComment={showOwnerComment}
                       currentUserId={currentUserId}
