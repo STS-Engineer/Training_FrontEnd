@@ -101,6 +101,26 @@ export async function signIn(email, password) {
   return handleResponse(res);
 }
 
+/**
+ * Change password for the authenticated user.
+ * @param {number} memberId - ID du membre
+ * @param {string} oldPassword - Ancien mot de passe
+ * @param {string} newPassword - Nouveau mot de passe
+ * @returns {Promise<{ message: string }>}
+ */
+export async function changePassword(memberId, oldPassword, newPassword) {
+  const token = await getToken();
+  const res = await fetch(`${API_URL}/users/${memberId}/change-password`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+  return handleResponse(res);
+}
+
 // ── Trainings ─────────────────────────────────────────────────────────────────
 
 /**

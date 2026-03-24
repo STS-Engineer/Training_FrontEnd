@@ -89,6 +89,15 @@
   stroke: var(--blue);
 }
 
+.db-sidebar-bottom {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 /* ── Body (right of sidebar) ──────────────────────────────────── */
 .db-body {
   flex: 1;

@@ -147,7 +147,7 @@ export default function SignIn() {
                   className="si-input si-input-pw"
                   placeholder="••••••••"
                   value={password}
-                  autoComplete="current-password"
+                  autoComplete="new-password"   // ← changé
                   onChange={e => { setPassword(e.target.value); setError(''); }}
                 />
                 <button

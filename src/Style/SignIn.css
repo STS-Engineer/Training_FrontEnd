@@ -229,7 +229,7 @@
 .si-input {
   width: 100%;
   height: 46px;
-  padding: 0 14px 0 42px;
+  padding: 0 14px 0 14px;
   background: var(--bg-input);
   border: 1.5px solid var(--border);
   border-radius: 10px;
@@ -238,6 +238,34 @@
   outline: none;
   transition: border-color .18s, box-shadow .18s, background .18s;
   font-family: inherit;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  clip-path: inset(0 0 0 0);
+}
+
+/* Hide all browser native password controls absolutely */
+input[type="password"]::-webkit-password-decoration,
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-password-revealers,
+input[type="password"]::-moz-password-toggle,
+.si-input::-webkit-inner-spin-button,
+.si-input::-webkit-outer-spin-button,
+.si-input::-moz-unset {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
 }
 
 .si-input::placeholder { color: var(--txt-lt); }
@@ -251,7 +279,7 @@
 }
 
 /* extra right padding when the password toggle button is present */
-.si-input-pw { padding-right: 46px; }
+.si-input-pw { padding-right: 20px; }
 
 .si-pw-toggle {
   position: absolute;

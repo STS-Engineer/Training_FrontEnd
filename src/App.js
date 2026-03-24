@@ -6,6 +6,7 @@ import Dashboard from './Component/Dashboard';
 import CalendarPage from './Component/CalendarPage';
 import TrainingForm from './Component/TrainingForm';
 import UpdateTrainingForm from './Component/UpdateTrainingForm';
+import ChangePassword from './Component/ChangePassword';
 
 export { setSession, getSession, clearSession, isAuthenticated } from './session';
 
@@ -39,6 +40,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <TrainingForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <ProtectedRoute>
+              <ChangePassword />
             </ProtectedRoute>
           }
         />
