@@ -15,6 +15,9 @@ import './../Style/Dashboard.css';
 export default function Dashboard() {
   const navigate = useNavigate();
   const { member } = getSession();
+  const currentUserRole = String(member?.role ?? '').toLowerCase();
+  const isAdmin = currentUserRole === 'admin';
+  const currentRequesterId = String(member?.id ?? member?.member_id ?? '');
 
   const [trainings,   setTrainings]   = useState([]);
   const [loading,     setLoading]     = useState(true);
@@ -41,22 +44,25 @@ export default function Dashboard() {
     navigate('/login', { replace: true });
   };
 
-  const refresh = () =>
-    fetchTrainings()
-      .then(data => setTrainings(data))
-      .catch(err  => setError(err.message));
-
   const createOptions = values => Array.from(new Set(values.filter(Boolean)))
     .sort((left, right) => left.localeCompare(right));
 
-  const statusOptions = createOptions(trainings.map(training => training.status));
-  const departmentOptions = createOptions(trainings.map(training => training.department));
-  const typeOptions = createOptions(trainings.map(training => training.type_of_training));
-  const requirementOptions = createOptions(trainings.map(training => training.requirement));
+  const accessibleTrainings = isAdmin
+    ? trainings
+    : trainings.filter(training =>
+        (training.requesters ?? []).some(requester =>
+          String(requester?.id ?? requester?.member_id ?? requester) === currentRequesterId
+        )
+      );
+
+  const statusOptions = createOptions(accessibleTrainings.map(training => training.status));
+  const departmentOptions = createOptions(accessibleTrainings.map(training => training.department));
+  const typeOptions = createOptions(accessibleTrainings.map(training => training.type_of_training));
+  const requirementOptions = createOptions(accessibleTrainings.map(training => training.requirement));
 
   const requesterOptions = Array.from(
     new Map(
-      trainings
+      accessibleTrainings
         .flatMap(training => training.requesters ?? [])
         .filter(requester => requester?.id != null)
         .map(requester => [
@@ -78,7 +84,7 @@ export default function Dashboard() {
   const typeSelectOptions = [{ value: 'all', label: 'All types' }, ...typeOptions.map(option => ({ value: option, label: option }))];
   const requirementSelectOptions = [{ value: 'all', label: 'All requirements' }, ...requirementOptions.map(option => ({ value: option, label: option }))];
 
-  const displayed = trainings.filter(t => {
+  const displayed = accessibleTrainings.filter(t => {
     const requesterSearch = (t.requesters ?? [])
       .flatMap(requester => [
         requester.display_name,
@@ -94,7 +100,7 @@ export default function Dashboard() {
       .toLowerCase()
       .includes(search.toLowerCase());
 
-    const matchesRequester = requesterFilter === 'all'
+    const matchesRequester = !isAdmin || requesterFilter === 'all'
       || (t.requesters ?? []).some(requester => String(requester.id) === requesterFilter);
 
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
@@ -113,7 +119,7 @@ export default function Dashboard() {
   const activeFilters = [
     search.trim() ? `Search: ${search.trim()}` : null,
     statusFilter !== 'all' ? `Status: ${statusFilter}` : null,
-    requesterFilter !== 'all'
+    isAdmin && requesterFilter !== 'all'
       ? `Requester: ${requesterOptions.find(option => option.id === requesterFilter)?.label ?? requesterFilter}`
       : null,
     departmentFilter !== 'all' ? `Department: ${departmentFilter}` : null,
@@ -131,12 +137,12 @@ export default function Dashboard() {
   };
 
   const stats = {
-    total:      trainings.length,
-    pending:    trainings.filter(t => t.status === 'pending').length,
-    inProgress: trainings.filter(t => t.status === 'in progress').length,
-    done:       trainings.filter(t => t.status === 'done').length,
-    rejected:   trainings.filter(t => t.status === 'rejected').length,
-    updated:    trainings.filter(t => t.status === 'updated').length,
+    total:      accessibleTrainings.length,
+    pending:    accessibleTrainings.filter(t => t.status === 'pending').length,
+    inProgress: accessibleTrainings.filter(t => t.status === 'in progress').length,
+    done:       accessibleTrainings.filter(t => t.status === 'done').length,
+    rejected:   accessibleTrainings.filter(t => t.status === 'rejected').length,
+    updated:    accessibleTrainings.filter(t => t.status === 'updated').length,
   };
 
   return (
@@ -152,7 +158,11 @@ export default function Dashboard() {
             <h1 className="db-welcome-title">
               Welcome back, <span>{member.first_name ?? member.display_name}</span> 👋
             </h1>
-            <p className="db-welcome-sub">Here's an overview of all training requests.</p>
+            <p className="db-welcome-sub">
+              {isAdmin
+                ? "Here's an overview of all training requests."
+                : "Here's an overview of your training requests."}
+            </p>
           </div>
           <button className="db-btn-new" onClick={() => navigate('/training')}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -206,16 +216,18 @@ export default function Dashboard() {
               />
             </div>
 
-            <div className="db-filter-wrap db-filter-wrap-requester">
-              <label className="db-filter-label">Requester</label>
-              <CustomSelect
-                name="requesterFilter"
-                value={requesterFilter}
-                onChange={e => setRequesterFilter(e.target.value)}
-                options={requesterSelectOptions}
-                placeholder="All requesters"
-              />
-            </div>
+            {isAdmin && (
+              <div className="db-filter-wrap db-filter-wrap-requester">
+                <label className="db-filter-label">Requester</label>
+                <CustomSelect
+                  name="requesterFilter"
+                  value={requesterFilter}
+                  onChange={e => setRequesterFilter(e.target.value)}
+                  options={requesterSelectOptions}
+                  placeholder="All requesters"
+                />
+              </div>
+            )}
 
             <div className="db-filter-wrap db-filter-wrap-department">
               <label className="db-filter-label">Department</label>
@@ -292,7 +304,7 @@ export default function Dashboard() {
               <line x1="16" y1="13" x2="8" y2="13" />
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
-            <p>No training requests found.</p>
+            <p>{isAdmin ? 'No training requests found.' : 'No training requests found for your account.'}</p>
           </div>
         )}
 

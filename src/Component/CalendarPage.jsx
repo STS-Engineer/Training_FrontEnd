@@ -22,6 +22,9 @@ function getFirstDayOfWeek(year, month) {
 export default function CalendarPage() {
   const navigate = useNavigate();
   const { member } = getSession();
+  const currentUserRole = String(member?.role ?? '').toLowerCase();
+  const isAdmin = currentUserRole === 'admin';
+  const currentRequesterId = String(member?.id ?? member?.member_id ?? '');
 
   const today  = new Date();
   const [year,  setYear]      = useState(today.getFullYear());
@@ -32,10 +35,20 @@ export default function CalendarPage() {
 
   useEffect(() => {
     fetchTrainings()
-      .then(data => setTrainings(data.filter(t => t.status === 'in progress')))
+      .then(data => {
+        const visibleTrainings = (isAdmin
+          ? data
+          : data.filter(training =>
+              (training.requesters ?? []).some(requester =>
+                String(requester?.id ?? requester?.member_id ?? requester) === currentRequesterId
+              )
+            )
+        ).filter(t => t.status === 'in progress');
+        setTrainings(visibleTrainings);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [isAdmin, currentRequesterId]);
 
   const handleSignOut = () => {
     clearSession();

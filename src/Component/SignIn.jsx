@@ -70,7 +70,15 @@ export default function SignIn() {
       const response = await signIn(email.trim(), password);
       const raw = response.data ?? response;
       const token  = raw.token;
-      const member = raw.member ?? raw.user ?? null;
+      const authUser = raw.user ?? null;
+      const memberProfile = raw.member ?? null;
+      const member = {
+        ...(authUser ?? {}),
+        ...(memberProfile ?? {}),
+        role: memberProfile?.role ?? authUser?.role ?? raw.role ?? null,
+        auth_id: authUser?.id ?? memberProfile?.auth_id ?? null,
+        member_id: authUser?.member_id ?? memberProfile?.member_id ?? memberProfile?.id ?? null,
+      };
       console.log('[SignIn] raw response:', raw);
       if (token) {
         setSession(token, member);
