@@ -5,7 +5,7 @@ const API_URL =  'http://localhost:3000/api';
 async function handleResponse(res) {
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(json.message || `Erreur serveur : ${res.status}`);
+    throw new Error(json.message || json.error || `Erreur serveur : ${res.status}`);
   }
   return json;
 }

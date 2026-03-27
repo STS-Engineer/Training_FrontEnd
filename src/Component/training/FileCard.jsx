@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import FilePreviewIcon from './FilePreviewIcon';
 
-export const isWordDoc = name => /\.docx?$/i.test(String(name ?? ''));
-
 function getFileCategory(file) {
   if (file.type.startsWith('image/')) return 'image';
   if (file.type.startsWith('video/')) return 'video';
@@ -12,7 +10,7 @@ function getFileCategory(file) {
 export default function FileCard({ file, index, onRemove, onFileClick }) {
   const category = getFileCategory(file);
   const [preview, setPreview] = useState(null);
-  const isWord = isWordDoc(file.name);
+  const isPreviewableDocument = category === 'document' && !!onFileClick;
 
   useEffect(() => {
     if (category !== 'image') return;
@@ -27,8 +25,8 @@ export default function FileCard({ file, index, onRemove, onFileClick }) {
 
   return (
     <li
-      className={`file-card file-card-${category}${isWord && onFileClick ? ' file-card-clickable' : ''}`}
-      onClick={isWord && onFileClick ? () => onFileClick(file, file.name) : undefined}
+      className={`file-card file-card-${category}${isPreviewableDocument ? ' file-card-clickable' : ''}`}
+      onClick={isPreviewableDocument ? () => onFileClick(file, file.name, file.type) : undefined}
     >
       {category === 'image' && preview ? (
         <div className="file-thumb">
@@ -41,7 +39,7 @@ export default function FileCard({ file, index, onRemove, onFileClick }) {
       )}
       <div className="file-info">
         <span className="file-card-name">{file.name}</span>
-        <span className="file-card-meta">{isWord && onFileClick ? 'Click to preview' : sizeLabel}</span>
+        <span className="file-card-meta">{isPreviewableDocument ? 'Click to preview' : sizeLabel}</span>
       </div>
       <button
         type="button"

@@ -372,13 +372,13 @@ export default function UpdateTrainingForm() {
               {/* 11 ── Quiz */}
               <FileUploadArea
                 label="Quiz"
-                description="if you would like to add a quiz, please provide us with the questions and answers if possible (about 8-10 questions) in a Word document"
+                description="if you would like to add a quiz, please provide the questions and answers in any file format (Word, PowerPoint, PDF, Excel, etc.)"
                 files={quizFiles}
                 setFiles={setQuizFiles}
-                accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                accept="*/*"
                 serverFiles={existingQuizzes}
                 onRemoveServerFile={handleRemoveExistingQuiz}
-                onFileClick={(src, fname) => setWordViewer({ source: src, name: fname })}
+                onFileClick={(src, fname, fileMime) => setWordViewer({ source: src, name: fname, mime: fileMime })}
               />
 
               {/* 12 ── Desired publication date */}
@@ -451,6 +451,7 @@ export default function UpdateTrainingForm() {
         <WordViewerModal
           source={wordViewer.source}
           name={wordViewer.name}
+          mime={wordViewer.mime}
           onClose={() => setWordViewer(null)}
         />
       )}

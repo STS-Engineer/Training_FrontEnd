@@ -14,12 +14,12 @@ export const PLANT_DEPARTMENTS = [
 'Financial Department',
 'R&D Department',
 'Sales Department',
-'Puschasing Department',
+'Purchasing Department',
 'HR Department',
 'Group Management',
 'Quality Department',
 'IT Department',
-'Project Managemnt Department',
+'Project Management Department',
 ];
 
 export const TRAINING_TYPES = [

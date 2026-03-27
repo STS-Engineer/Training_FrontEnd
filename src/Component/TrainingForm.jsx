@@ -32,12 +32,12 @@ const PLANT_DEPARTMENTS = [
   'Financial Department',
   'R&D Department',
   'Sales Department',
-  'Puschasing Department',
+  'Purchasing Department',
   'HR Department',
   'Group Management',
   'Quality Department',
   'IT Department',
-  'Project Managemnt Department',
+  'Project Management Department',
 ];
 
 const TRAINING_TYPES = [
@@ -157,6 +157,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
     ];
     required.forEach(f => { if (!form[f]) errs[f] = 'Ce champ est obligatoire.'; });
     if (!form.requester_id || form.requester_id.length === 0) errs.requester_id = 'Ce champ est obligatoire.';
+    if (!form.requester_supervisor_id || form.requester_supervisor_id.length === 0) errs.requester_supervisor_id = 'Ce champ est obligatoire.';
     return errs;
   };
 
@@ -311,7 +312,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
             </div>
 
             {/* 4 ── Requester Supervisor (auto-filled from DB) */}
-            <div className="fg">
+            <div className={`fg${errors.requester_supervisor_id ? ' fg-error' : ''}`}>
               <label>Requester Supervisor</label>
               {form.requester_supervisor_id.length === 0
                 ? <p style={{ margin: 0, fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>Auto-filled after selecting requester</p>
@@ -324,6 +325,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
                     })}
                   </div>
               }
+              {errors.requester_supervisor_id && <span className="field-error">{errors.requester_supervisor_id}</span>}
             </div>
 
             {/* 5 ── Type of Training */}
@@ -410,13 +412,13 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
             {/* 11 ── Quiz */}
             <FileUploadArea
               label="Quiz"
-              description="if you would like to add a quiz, please provide us with the questions and answers if possible (about 8-10 questions) in a Word document"
+              description="if you would like to add a quiz, please provide the questions and answers in any file format (Word, PowerPoint, PDF, Excel, etc.)"
               files={quizFiles}
               setFiles={setQuizFiles}
-              accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              accept="*/*"
               serverFiles={existingQuizzes}
               onRemoveServerFile={editMode ? handleRemoveExistingQuiz : null}
-              onFileClick={(src, fname) => setWordViewer({ source: src, name: fname })}
+              onFileClick={(src, fname, fileMime) => setWordViewer({ source: src, name: fname, mime: fileMime })}
             />
 
             {/* 12 ── Desired publication date */}
@@ -483,6 +485,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
         <WordViewerModal
           source={wordViewer.source}
           name={wordViewer.name}
+          mime={wordViewer.mime}
           onClose={() => setWordViewer(null)}
         />
       )}
@@ -579,7 +582,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
                           options={users.map(u => ({ value: u.id, label: `${u.first_name} ${u.last_name}` }))} />
                         {errors.requester_id && <span className="field-error">{errors.requester_id}</span>}
                       </div>
-                      <div className="fg">
+                      <div className={`fg${errors.requester_supervisor_id ? ' fg-error' : ''}`}>
                         <label>Requester Supervisor</label>
                         {form.requester_supervisor_id.length === 0
                           ? <p style={{ margin: 0, fontSize: 13, color: '#94a3b8', fontStyle: 'italic' }}>Auto-filled after selecting requester</p>
@@ -592,6 +595,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
                               })}
                             </div>
                         }
+                        {errors.requester_supervisor_id && <span className="field-error">{errors.requester_supervisor_id}</span>}
                       </div>
                     </div>
                   </div>
@@ -650,10 +654,10 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
                       files={photoFiles} setFiles={setPhotoFiles}
                       accept=".jpg,.jpeg,.png,.webp,.mp4,.mov,image/jpeg,image/png,image/webp,video/mp4,video/quicktime" />
                     <FileUploadArea label="Quiz"
-                      description="if you would like to add a quiz, please provide us with the questions and answers if possible (about 8-10 questions) in a Word document"
+                      description="if you would like to add a quiz, please provide the questions and answers in any file format (Word, PowerPoint, PDF, Excel, etc.)"
                       files={quizFiles} setFiles={setQuizFiles}
-                      accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                      onFileClick={(src, fname) => setWordViewer({ source: src, name: fname })} />
+                      accept="*/*"
+                      onFileClick={(src, fname, fileMime) => setWordViewer({ source: src, name: fname, mime: fileMime })} />
                     <div className={`fg${errors.desiredPublicationDate ? ' fg-error' : ''}`} style={{ maxWidth: '50%' }}>
                       <label>Desired publication date <span className="req">*</span></label>
                       <p className="fd">please allow at least <strong className="highlight">15</strong> days for delivery</p>
@@ -702,7 +706,7 @@ export default function TrainingForm({ training = null, onClose = null, onSaved 
         </div>
       </div>
       {wordViewer && (
-        <WordViewerModal source={wordViewer.source} name={wordViewer.name}
+        <WordViewerModal source={wordViewer.source} name={wordViewer.name} mime={wordViewer.mime}
           onClose={() => setWordViewer(null)} />
       )}
     </>

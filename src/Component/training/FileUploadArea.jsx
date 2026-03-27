@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import UploadIcon from './UploadIcon';
-import FileCard, { isWordDoc } from './FileCard';
+import FileCard from './FileCard';
 import FilePreviewIcon from './FilePreviewIcon';
 
 const FILES_HOST = 'http://localhost:3000';
@@ -18,13 +18,13 @@ function ServerFileCard({ file, index, onRemove, onFileClick }) {
   const { url, name, mimeType } = normalizeServerFile(file);
   const isImage = mimeType.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif)$/i.test(name);
   const isVideo = mimeType.startsWith('video/') || /\.(mp4|mov|avi|webm)$/i.test(name);
-  const isWord  = isWordDoc(name);
   const category = isImage ? 'image' : isVideo ? 'video' : 'document';
+  const isPreviewableDocument = category === 'document' && !!onFileClick;
 
   return (
     <li
-      className={`file-card file-card-${category}${isWord && onFileClick ? ' file-card-clickable' : ''}`}
-      onClick={isWord && onFileClick ? () => onFileClick(url, name) : undefined}
+      className={`file-card file-card-${category}${isPreviewableDocument ? ' file-card-clickable' : ''}`}
+      onClick={isPreviewableDocument ? () => onFileClick(url, name, mimeType) : undefined}
     >
       {isImage ? (
         <div className="file-thumb">
@@ -37,7 +37,7 @@ function ServerFileCard({ file, index, onRemove, onFileClick }) {
       )}
       <div className="file-info">
         <span className="file-card-name">{name}</span>
-        {isWord && onFileClick ? (
+        {isPreviewableDocument ? (
           <span className="sf-view-link">Click to preview</span>
         ) : (
           <a href={url} target="_blank" rel="noreferrer" className="sf-view-link"

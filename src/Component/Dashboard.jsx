@@ -315,7 +315,7 @@ export default function Dashboard() {
             expandedRow={expandedRow}
             setExpandedRow={setExpandedRow}
             onOpenMedia={(fs, i) => setModal({ files: fs, index: i })}
-            onOpenQuiz={f => setWordModal({ url: f.url, name: f.name })}
+            onOpenQuiz={f => setWordModal({ source: f.url, name: f.name, mime: f.mime })}
             currentUserId={member?.id}
           />
         )}
@@ -326,8 +326,9 @@ export default function Dashboard() {
       {modal && <MediaModal modal={modal} onClose={() => setModal(null)} />}
       {wordModal && (
         <WordViewerModal
-          source={wordModal.url}
+          source={wordModal.source}
           name={wordModal.name}
+          mime={wordModal.mime}
           onClose={() => setWordModal(null)}
         />
       )}

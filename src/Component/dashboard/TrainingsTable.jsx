@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { normalizeFiles, fileKind, isWordDoc } from './fileHelpers';
+import { normalizeFiles, fileKind } from './fileHelpers';
 import { FilesCell } from './MediaModal';
 import CompletionModal from './CompletionModal';
 
@@ -133,7 +133,7 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
         <td onClick={e => e.stopPropagation()}>
           <FilesCell files={quizFiles} onOpen={(fs, i) => {
             const f = fs[i];
-            if (isWordDoc(f.name)) onOpenQuiz(f);
+            if (fileKind(f) === 'document') onOpenQuiz(f);
             else onOpenMedia(fs, i);
           }} />
         </td>
@@ -205,7 +205,7 @@ function TrainingRow({ training: t, index, expandedRow, setExpandedRow,
           <td onClick={e => e.stopPropagation()}>
             <FilesCell files={docFiles} onOpen={(fs, i) => {
               const f = fs[i];
-              if (isWordDoc(f.name)) onOpenQuiz(f);
+              if (fileKind(f) === 'document') onOpenQuiz(f);
               else onOpenMedia(fs, i);
             }} />
           </td>
